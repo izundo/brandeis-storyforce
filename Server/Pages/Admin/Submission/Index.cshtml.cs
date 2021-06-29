@@ -17,11 +17,11 @@ namespace StoryForce.Server.Pages.Admin.Submission
     [Authorize]
     public class DetailsModel : PageModel
     {
-        private SubmissionService _submissionService;
+        private ISubmissionService _submissionService;
         private readonly IConfiguration _configuration;
         private IAmazonS3 _s3Client;
         private string _s3BucketName;
-        public DetailsModel(SubmissionService submissionService, IConfiguration configuration, IAmazonS3 s3Client)
+        public DetailsModel(ISubmissionService submissionService, IConfiguration configuration, IAmazonS3 s3Client)
         {
             this._submissionService = submissionService;
             this._configuration = configuration;
@@ -32,14 +32,14 @@ namespace StoryForce.Server.Pages.Admin.Submission
         [BindProperty]
         public StoryForce.Shared.Dtos.SubmissionDto Submission { get; set; }
 
-        public async Task<IActionResult> OnGetAsync(string id)
+        public async Task<IActionResult> OnGetAsync(int id)
         {
             var submission = await this._submissionService.GetAsync(id);
             this.Submission = SubmissionDto.ConvertFromEntity(submission);
             return Page();
         }
 
-        public async Task<IActionResult> OnPostDeleteAsync(string id)
+        public async Task<IActionResult> OnPostDeleteAsync(int id)
         {
             await this._submissionService.RemoveWithFilesAsync(id);
             return new RedirectToPageResult("/Admin/Index");

@@ -1,14 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using AutoMapper.Configuration.Annotations;
 using MongoDB.Driver;
 using StoryForce.Shared.Models;
 
 namespace StoryForce.Server.Services
 {
-    public class PeopleService
+    public class PeopleService : IPeopleService
     {
         private readonly IMongoCollection<Person> _people;
 
@@ -23,7 +20,7 @@ namespace StoryForce.Server.Services
         public async Task<List<Person>> GetAsync() =>
             (await _people.FindAsync(s => true)).ToList();
 
-        public async Task<Person> GetAsync(string id) =>
+        public async Task<Person> GetAsync(int id) =>
             (await _people.FindAsync<Person>(s => s.Id == id)).FirstOrDefault();
 
         public async Task<Person> GetByEmailOrNameAndYearAsync(string email, string name, int? year)
@@ -67,13 +64,13 @@ namespace StoryForce.Server.Services
             return people;
         }
 
-        public async Task UpdateAsync(string id, Person person) =>
+        public async Task UpdateAsync(int id, Person person) =>
             await _people.ReplaceOneAsync(s => s.Id == id, person);
 
         public async Task RemoveAsync(Person person) =>
             await _people.DeleteOneAsync(s => s.Id == person.Id);
 
-        public async Task RemoveAsync(string id) =>
+        public async Task RemoveAsync(int id) =>
             await _people.DeleteOneAsync(s => s.Id == id);
     }
 }

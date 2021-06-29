@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 
 namespace StoryForce.Shared.Models
 {
@@ -10,6 +8,8 @@ namespace StoryForce.Shared.Models
 
         public Category ParentCategory { get; set; }
 
-        public IList<Category> SubCategories { get; set; }
+        public ICollection<Category> SubCategories { get; set; }
+
+        public ICollection<StoryFile> StoryFiles { get; set; }
     }
 }

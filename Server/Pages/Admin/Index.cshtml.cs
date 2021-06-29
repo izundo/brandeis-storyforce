@@ -8,12 +8,9 @@ using Amazon.S3.Model;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.AspNetCore.Routing.Constraints;
 using Microsoft.Extensions.Configuration;
 using StoryForce.Server.Services;
 using StoryForce.Shared.Dtos;
-using StoryForce.Shared.Models;
-using StoryForce.Shared.Services;
 
 namespace StoryForce.Server.Pages.Admin
 {
@@ -21,14 +18,12 @@ namespace StoryForce.Server.Pages.Admin
     public class IndexModel : PageModel
     {
         private readonly IConfiguration _configuration;
-        private SubmissionService _submissionService;
-        private IAmazonS3 _s3Client;
+        private readonly ISubmissionService _submissionService;
+        private readonly IAmazonS3 _s3Client;
         private WebClient _webClient;
 
         public IndexModel(IConfiguration configuration
-            , SubmissionService submissionService
-            , StoryFileService storyFileService
-            , PeopleService peopleService
+            , ISubmissionService submissionService
             , IAmazonS3 s3Client)
         {
             this._configuration = configuration;

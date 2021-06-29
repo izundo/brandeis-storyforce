@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using MongoDB.Bson.Serialization.Attributes;
 using StoryForce.Shared.Models;
 
 namespace StoryForce.Shared.Dtos
@@ -23,9 +21,9 @@ namespace StoryForce.Shared.Dtos
 
         public DateTime? UpdatedAt { get; set; }
         
-        public Administrator ReviewedBy { get; set; }
+        public Person ReviewedBy { get; set; }
 
-        public Administrator ApprovedBy { get; set; }
+        public Person ApprovedBy { get; set; }
 
         public string Title { get; set; }
 
@@ -82,7 +80,7 @@ namespace StoryForce.Shared.Dtos
                     SubmittedBy = this.SubmittedBy,
                     CreatedAt = this.CreatedAt,
                     ReviewedBy = this.ReviewedBy,
-                    UpdatedAt = this.UpdatedAt,
+                    UpdatedAt = this.UpdatedAt                    
                 };
         }
 
@@ -95,12 +93,12 @@ namespace StoryForce.Shared.Dtos
                     ApprovedBy = entity.ApprovedBy,
                     Title = entity.Title,
                     Description = entity.Description,
-                    ApprovedFiles = entity.ApprovedFiles,
+                    ApprovedFiles = entity.ApprovedFiles.ToList(),
                     Event = entity.Event,
-                    FeaturedPeople = entity.FeaturedPeople,
-                    History = entity.History,
-                    RejectedFiles = entity.RejectedFiles,
-                    SubmittedFiles = entity.SubmittedFiles,
+                    FeaturedPeople = entity.FeaturedPeople.ToList(),
+                    History = entity.History.ToList(),
+                    RejectedFiles = entity.RejectedFiles.ToList(),
+                    SubmittedFiles = entity.SubmittedFiles.ToList(),
                     SubmittedBy = entity.SubmittedBy,
                     CreatedAt = entity.CreatedAt,
                     ReviewedBy = entity.ReviewedBy,

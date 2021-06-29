@@ -30,7 +30,7 @@ namespace StoryForce.Server.Controllers
         [HttpGet]
         public async Task<IActionResult> getByEmail(string email)
         {
-            var task = await _submissionService.GetAsyncbyEmail(email);
+            var task = await _submissionService.GetByRequestedByEmailAsync(email);
             if (task == null) return BadRequest();
             return Ok(task);
         }

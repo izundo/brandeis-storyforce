@@ -1,10 +1,6 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using System;
+﻿using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
-using MongoDB.Driver.Core.Operations;
 using StoryForce.Server.Services;
 using StoryForce.Shared.Models;
 
@@ -14,9 +10,9 @@ namespace StoryForce.Server.Controllers
     [ApiController]
     public class EventsController : ControllerBase
     {
-        private EventService _eventService;
+        private readonly IEventService _eventService;
 
-        public EventsController(EventService eventService)
+        public EventsController(IEventService eventService)
         {
             this._eventService = eventService;
         }

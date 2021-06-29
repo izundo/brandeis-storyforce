@@ -8,7 +8,7 @@ using StoryForce.Shared.ViewModels;
 
 namespace StoryForce.Server.Services
 {
-    public class SubmissionService
+    public class SubmissionService : ISubmissionService
     {
         private readonly IMongoCollection<Submission> _submissions;
         private readonly IMongoCollection<StoryFile> _storyFiles;
@@ -26,12 +26,12 @@ namespace StoryForce.Server.Services
         public async Task<List<Submission>> GetAsync() =>
             (await _submissions.FindAsync(s => true)).ToList();
 
-        public async Task<Submission> GetAsync(string id) =>
+        public async Task<Submission> GetAsync(int id) =>
             (await _submissions.FindAsync<Submission>(s => s.Id == id)).FirstOrDefault();
 
 
         //GetStoryFile by Email
-        public async Task<List<StoryFile>> GetAsyncbyEmail(string email) =>
+        public async Task<List<StoryFile>> GetByRequestedByEmailAsync(string email) =>
             (await _storyFiles.FindAsync<StoryFile>(s => s.RequestedBy.Email == email)).ToList();
 
         public async Task<Submission> CreateAsync(Submission submission)
@@ -40,16 +40,21 @@ namespace StoryForce.Server.Services
             return submission;
         }
 
-        public async Task UpdateAsync(string id, Submission submission) =>
+        public async Task<List<Submission>> CreateMultipleAsync(List<Submission> entities)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task UpdateAsync(int id, Submission submission) =>
             await _submissions.ReplaceOneAsync(s => s.Id == id, submission);
 
         public async Task RemoveAsync(Submission submission) =>
             await RemoveAsync(submission.Id);
 
-        public async Task RemoveAsync(string id) =>
+        public async Task RemoveAsync(int id) =>
             await _submissions.DeleteOneAsync(s => s.Id == id);
 
-        public async Task RemoveWithFilesAsync(string id)
+        public async Task RemoveWithFilesAsync(int id)
         {
             using var session = await _client.StartSessionAsync();
             session.StartTransaction();

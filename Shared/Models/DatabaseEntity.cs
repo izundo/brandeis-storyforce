@@ -1,8 +1,5 @@
-﻿using MongoDB.Bson.Serialization.Attributes;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using MongoDB.Bson;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace StoryForce.Shared.Models
 {
@@ -12,10 +9,9 @@ namespace StoryForce.Shared.Models
         {
             this.CreatedAt = DateTime.UtcNow;
         }
-
-        [BsonId]
-        [BsonRepresentation(BsonType.ObjectId)]
-        public string Id { get; set; }
+        
+        [Key]
+        public int Id { get; set; }
 
         public DateTime CreatedAt { get; set; }
     }

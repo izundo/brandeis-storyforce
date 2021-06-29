@@ -53,6 +53,7 @@ namespace StoryForce.Client.Pages
         private Interop _interop;
         private string _fileKeyPrefix;
         private string[] _googleDocTypes;
+        private string filenameVali = string.Empty;
 
         [Inject]
         public IConfiguration Configuration { get; set; }
@@ -64,7 +65,7 @@ namespace StoryForce.Client.Pages
         public ILocalStorageService LocalStorage { get; set; }
 
         public BlazorFilesSubmission Submission { get; set; }
-
+        
         public UploadByUrl NewUploadByUrl { get; set; }
 
         public IEnumerable<Person> Students { get; set; }
@@ -120,9 +121,14 @@ namespace StoryForce.Client.Pages
             var isInValid = this.Submission.UploadFiles.Any(x => string.IsNullOrEmpty(x.Description));
             if (isInValid)
             {
-                ShowModalWindow();
-                modalDisplayRequired = "block";
-                this.ShowUploadSuccessMessage();
+                filenameVali = String.Empty;
+                foreach ( var item in  this.Submission.UploadFiles.Where(m => m.Description == null))
+                {
+                    filenameVali +=  item.Title + ",";                    
+                }
+
+                CloseModalWindow();
+                ShowModalRequiredWindow();
                 return;
             }
 
@@ -188,7 +194,8 @@ namespace StoryForce.Client.Pages
                     Key = $"{this._fileKeyPrefix}-{file.Name}",
                     Size = file.Size,
                     MimeType = file.ContentType,
-                    StorageProvider = StorageProvider.LocalFileSystem
+                    StorageProvider = StorageProvider.LocalFileSystem,
+                    FeaturedPeople = new List<Person>() { new() }
                 };
                 if (file.ContentType.StartsWith("image/"))
                 {
@@ -402,6 +409,17 @@ namespace StoryForce.Client.Pages
             modalDisplay = "block";
             modalClass = "Show";
             showBackdrop = true;
+            this.modalProgressClass = string.Empty;
+            this.successClass = "hide";
+            this.modalFooterClass = "hide";
+            this.StateHasChanged();
+        }
+
+        private void ShowModalRequiredWindow()
+        {
+            modalDisplayRequired = "block";
+            modalClass = "Show";
+            showBackdrop = true;
             this.StateHasChanged();
         }
 
@@ -417,12 +435,15 @@ namespace StoryForce.Client.Pages
         {
             modalDisplayRequired = "none";
             modalClass = "";
+            filenameVali = string.Empty;
             showBackdrop = false;
             this.StateHasChanged();
         }
 
         private void ShowUploadSuccessMessage()
         {
+            modalDisplay = "block";
+            showBackdrop = true;
             this.successClass = string.Empty;
             this.modalFooterClass = string.Empty;
             this.modalProgressClass = "hide";
@@ -461,6 +482,13 @@ namespace StoryForce.Client.Pages
                     this._fileKeyPrefix);
             }
 
+            
+            this.Submission.UploadFiles.ForEach(file =>
+            {
+                // remove blank featured people
+                file.FeaturedPeople.RemoveAll(person => string.IsNullOrEmpty(person.Name) && !file.Class.HasValue);                             
+            });
+
             // Upload Url-based files
             var uploadByUrlsFiles =
                 this.Submission.UploadFiles.Where(f => f.StorageProvider == StorageProvider.GoogleDrive)
@@ -486,7 +514,6 @@ namespace StoryForce.Client.Pages
                 file.MimeType = MimeTypesMap.GetMimeType(fileName);
                 file.Description = file.Description;
                 file.Size = 0;
-
                 urlFiles.Add(new UploadByUrl
                 {
                     DownloadUrl = file.DownloadUrl,
@@ -523,7 +550,7 @@ namespace StoryForce.Client.Pages
 
             this.ShowUploadSuccessMessage();
             this.ResetPageData();
-            await this.PopulateUserDataFromLocalStorage();        
+            await this.PopulateUserDataFromLocalStorage();
 
         }
 

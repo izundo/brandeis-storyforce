@@ -27,11 +27,11 @@ namespace StoryForce.Server.Controllers
     [ApiController]
     public class SubmissionsController : ControllerBase
     {
-        private readonly SubmissionService _submissionService;
-        private readonly StoryFileService _storyFileService;
-        private readonly PeopleService _peopleService;
-        private readonly EventService _eventService;
-        private readonly SendMailJobService _sendMailJobService;
+        private readonly ISubmissionService _submissionService;
+        private readonly IStoryFileService _storyFileService;
+        private readonly IPeopleService _peopleService;
+        private readonly IEventService _eventService;
+        private readonly ISendMailJobService _sendMailJobService;
         private readonly IConfiguration _configuration;
         readonly string[] scopes = { DriveService.Scope.Drive };
         DriveService _gDriveService;
@@ -40,11 +40,11 @@ namespace StoryForce.Server.Controllers
         private string UPLOAD_DIRECTORY;
 
         public SubmissionsController(IConfiguration configration
-            , SubmissionService submissionService
-            , StoryFileService storyFileService
-            , PeopleService peopleService
-            , EventService eventService,
-            SendMailJobService sendMailJobService
+            , ISubmissionService submissionService
+            , IStoryFileService storyFileService
+            , IPeopleService peopleService
+            , IEventService eventService,
+            ISendMailJobService sendMailJobService
             )
         {
             _configuration = configration;
@@ -67,8 +67,8 @@ namespace StoryForce.Server.Controllers
             return submissions.Select(submission => SubmissionDto.ConvertFromEntity(submission)).ToList();
         }
 
-        [HttpGet("{id:length(24)}", Name = "GetSubmission")]
-        public async Task<ActionResult<SubmissionDto>> Get(string id)
+        [HttpGet("{id}", Name = "GetSubmission")]
+        public async Task<ActionResult<SubmissionDto>> Get(int id)
         {
             var submission = await _submissionService.GetAsync(id);
 
@@ -85,61 +85,57 @@ namespace StoryForce.Server.Controllers
         [RequestFormLimits(MultipartBodyLengthLimit = 2147483648)] //2GB:1024 * 1024 * 1024 * 2
         public async Task<ActionResult<SubmissionDto>> CreateFromSimple(BlazorFilesSubmission submission)
         {
-            var events = await _eventService.GetAsync();
-            var people = await _peopleService.GetAsync();
-            var converted = submission.ConvertToEntity();
-            var submitter = await _peopleService.CreateAsync(converted.SubmittedBy);
-            converted.SubmittedBy = submitter;
+            var convertedSubmission = submission.ConvertToEntity();
 
-            foreach (var file in submission.UploadFiles)
+            convertedSubmission.SubmittedBy = await _peopleService.GetByEmailOrNameAndYearAsync(submission.SubmittedBy.Email, submission.SubmittedBy.Name, null) ?? submission.SubmittedBy;
+
+            convertedSubmission.FeaturedPeople = await Task.WhenAll(convertedSubmission
+                .FeaturedPeople
+                .Select(async person => await _peopleService.GetByEmailOrNameAndYearAsync(person.Email, person.Name, null) ?? person));
+
+            foreach (var storyFile in convertedSubmission.SubmittedFiles)
             {
-                var storyFile = converted.SubmittedFiles.SingleOrDefault(f => f.Title == file.Title);
-
-                storyFile.UpdatedAt = converted.CreatedAt;
-                storyFile.SubmissionId = converted.Id;
-                storyFile.SubmittedBy = submitter;
-                storyFile.Event = file.Event;
-                storyFile.RequestedBy = file.RequestedBy;
-                storyFile.Class = file.Class;
-
-                foreach (var person in storyFile.FeaturedPeople)
+                storyFile.SubmittedBy = convertedSubmission.SubmittedBy;
+                if (storyFile.RequestedBy != null)
                 {
-                    var featured = people.Find(p => p.Name == person.Name);
-                    if (featured is null)
-                    {
-                        continue;
-                    }
-                    person.Id = featured.Id;
-                    person.Email = featured.Email;
-                    person.Type = featured.Type;
-                    person.ClassOfYear = featured.ClassOfYear;
-                    person.AvatarUrl = featured.AvatarUrl;
+                    storyFile.RequestedBy = await _peopleService.GetAsync(storyFile.RequestedBy.Id);
+                }
+
+                storyFile.FeaturedPeople = await Task.WhenAll(storyFile
+                    .FeaturedPeople
+                    .Select(async person => await _peopleService.GetByEmailOrNameAndYearAsync(person.Email, person.Name, null) ?? person));
+
+                if (storyFile.Event != null && !string.IsNullOrEmpty(storyFile.Event.Name))
+                {
+                    storyFile.Event = await _eventService.GetByNameAsync(storyFile.Event.Name) ?? storyFile.Event;
                 }
             }
 
-            await _storyFileService.CreateMultipleAsync(converted.SubmittedFiles);
+            var insertedSubmission = await _submissionService.CreateAsync(convertedSubmission);
 
-            await _submissionService.CreateAsync(converted);
+            var requestedPeople = submission.UploadFiles.Select(x => x.RequestedBy).ToArray();
 
-            var staffs = await this._peopleService.GetAsync();
-            var requestedPersons = submission.UploadFiles.Select(x => x.RequestedBy.Email).Distinct().Select(r => staffs.FirstOrDefault(s => s.Email == r)); ;
-
-            foreach (var requestedPerson in requestedPersons)
+            if (requestedPeople.Any(x => x != null))
             {
-                if (requestedPerson == null) continue;
+                var requestedPersons = submission.UploadFiles.Select(x => x.RequestedBy?.Email).Distinct().Select(r => requestedPeople.FirstOrDefault(s => s.Email == r)); ;
 
-                await this._sendMailJobService.SendEmailAsync(new SendMailRequest()
+                foreach (var requestedPerson in requestedPersons)
                 {
-                    To = requestedPerson.Email,
-                    Subject = "[StoryForce] Requested documents was uploaded",
-                    Content = @$"Dear {requestedPerson.Name}, 
+                    if (requestedPerson == null) continue;
+
+                    await this._sendMailJobService.SendEmailAsync(new SendMailRequest()
+                    {
+                        To = requestedPerson.Email,
+                        Subject = "[StoryForce] Requested documents was uploaded",
+                        Content = @$"Dear {requestedPerson.Name}, 
                                 <br>
                                 The documents you request was uploaded, please check it out <a href='{Request.Scheme}://{Request.Host}/showFile'>here</a>"
-                });
+                    });
 
+                }
             }
 
-            return CreatedAtRoute("GetSubmission", new { id = converted.Id }, converted);
+            return CreatedAtRoute("GetSubmission", new { id = insertedSubmission.Id }, insertedSubmission);
         }
 
         [HttpPost("blazor")]
@@ -148,10 +144,10 @@ namespace StoryForce.Server.Controllers
         public async Task<ActionResult<SubmissionDto>> CreateFromBlazor(BlazorFilesSubmission submission)
         {
             var googleDriveId = this._configuration.GetSection("Google:Drive:DriveId").Value;
-            var converted = submission.ConvertToEntity();
-            var submitter = await _peopleService.CreateAsync(converted.SubmittedBy);
-            converted.SubmittedBy = submitter;
 
+            var convertedSubmission = submission.ConvertToEntity();
+            convertedSubmission.SubmittedBy = await _peopleService.GetByEmailOrNameAndYearAsync(submission.SubmittedBy.Email, submission.SubmittedBy.Name, null) ?? submission.SubmittedBy;
+            
             for (var index = 0; index < submission.UploadFiles.Count; index++)
             {
                 var currentFile = submission.UploadFiles[index];
@@ -163,8 +159,8 @@ namespace StoryForce.Server.Controllers
                 File newFile = new File
                 {
                     Name = currentFile.Title,
-                    Description = converted.SubmittedFiles != null && converted.SubmittedFiles.Count > 0
-                        ? converted.SubmittedFiles[index].Description
+                    Description = convertedSubmission.SubmittedFiles != null && convertedSubmission.SubmittedFiles.Count > 0
+                        ? convertedSubmission.SubmittedFiles.ElementAt(index).Description
                         : string.Empty,
                     Parents = new List<string>() { googleDriveId }
                 };
@@ -221,35 +217,44 @@ namespace StoryForce.Server.Controllers
 
                 request.ResponseReceived += (file) =>
                 {
-                    var storyFile = converted.SubmittedFiles.SingleOrDefault(f => f.Title == file.Name);
+                    var storyFile = convertedSubmission.SubmittedFiles.SingleOrDefault(f => f.Title == file.Name);
                     storyFile.DownloadUrl = file.WebContentLink;
                     storyFile.ThumbnailUrl = file.ThumbnailLink;
-                    storyFile.UpdatedAt = converted.CreatedAt;
-                    storyFile.SubmissionId = converted.Id;
-                    storyFile.SubmittedBy = submitter;
+                    storyFile.UpdatedAt = convertedSubmission.CreatedAt;
+                    storyFile.SubmissionId = convertedSubmission.Id;
+                    storyFile.SubmittedBy = convertedSubmission.SubmittedBy;
                     storyFile.Size = file.Size;
                 };
 
                 await request.UploadAsync();
             }
 
-            // await _peopleService.CreateMultipleAsync(converted.FeaturedPeople);
-            foreach (var person in converted.FeaturedPeople)
+            convertedSubmission.FeaturedPeople = await Task.WhenAll(convertedSubmission
+                .FeaturedPeople
+                .Select(async person => await _peopleService.GetByEmailOrNameAndYearAsync(person.Email, person.Name, null) ?? person));
+
+            foreach (var storyFile in convertedSubmission.SubmittedFiles)
             {
-                var addedPerson = await _peopleService.CreateAsync(person);
-                person.Id = addedPerson.Id;
+                storyFile.SubmittedBy = convertedSubmission.SubmittedBy;
+                if (storyFile.RequestedBy != null)
+                {
+                    storyFile.RequestedBy = await _peopleService.GetAsync(storyFile.RequestedBy.Id);
+                }
+
+                storyFile.FeaturedPeople = await Task.WhenAll(storyFile
+                    .FeaturedPeople
+                    .Select(async person => await _peopleService.GetByEmailOrNameAndYearAsync(person.Email, person.Name, null) ?? person));
             }
 
-            await _storyFileService.CreateMultipleAsync(converted.SubmittedFiles);
-
-            if (converted.Event != null && !string.IsNullOrEmpty(converted.Event.Name))
+            
+            if (convertedSubmission.Event != null && !string.IsNullOrEmpty(convertedSubmission.Event.Name))
             {
-                await _eventService.CreateAsync(converted.Event);
+                convertedSubmission.Event = await _eventService.GetByNameAsync(convertedSubmission.Event.Name) ?? submission.Event;
             }
 
-            await _submissionService.CreateAsync(converted);
+            var insertedSubmission = await _submissionService.CreateAsync(convertedSubmission);
 
-            return CreatedAtRoute("GetSubmission", new { id = converted.Id }, converted);
+            return CreatedAtRoute("GetSubmission", new { id = insertedSubmission.Id }, insertedSubmission);
         }
 
         private async Task SaveFileChunkToDisk(IFormFile file)
@@ -306,7 +311,7 @@ namespace StoryForce.Server.Controllers
                 {
                     Name = currentFile.FileName,
                     Description = converted.SubmittedFiles != null && converted.SubmittedFiles.Count > 0
-                        ? converted.SubmittedFiles[index].Description
+                        ? converted.SubmittedFiles.ElementAt(index).Description
                         : string.Empty,
                     Parents = new List<string>() { googleDriveId }
                 };
@@ -381,7 +386,7 @@ namespace StoryForce.Server.Controllers
                 person.Id = addedPerson.Id;
             }
 
-            await _storyFileService.CreateMultipleAsync(converted.SubmittedFiles);
+            await _storyFileService.CreateMultipleAsync(converted.SubmittedFiles.ToList());
 
             if (converted.Event != null && !string.IsNullOrEmpty(converted.Event.Name))
             {
@@ -393,8 +398,8 @@ namespace StoryForce.Server.Controllers
             return CreatedAtRoute("GetSubmission", new { id = converted.Id }, converted);
         }
 
-        [HttpPut("{id:length(24)}")]
-        public async Task<IActionResult> Update(string id, SubmissionDto updatedSubmission)
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(int id, SubmissionDto updatedSubmission)
         {
             var submission = await _submissionService.GetAsync(id);
 
@@ -408,8 +413,8 @@ namespace StoryForce.Server.Controllers
             return NoContent();
         }
 
-        [HttpDelete("{id:length(24)}")]
-        public async Task<IActionResult> Delete(string id)
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(int id)
         {
             var submission = await _submissionService.GetAsync(id);
 

@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using MongoDB.Driver;
 using StoryForce.Shared.Models;
@@ -22,7 +20,7 @@ namespace StoryForce.Server.Services
         public async Task<List<Event>> GetAsync() =>
             (await _events.FindAsync(s => true)).ToList();
 
-        public async Task<Event> GetAsync(string id) =>
+        public async Task<Event> GetAsync(int id) =>
             (await _events.FindAsync<Event>(s => s.Id == id)).FirstOrDefault();
 
         public async Task<Event> GetByNameAsync(string name) =>
@@ -40,13 +38,13 @@ namespace StoryForce.Server.Services
             return events;
         }
 
-        public async Task UpdateAsync(string id, Event e) =>
+        public async Task UpdateAsync(int id, Event e) =>
             await _events.ReplaceOneAsync(s => s.Id == id, e);
 
         public async Task RemoveAsync(Event e) =>
             await _events.DeleteOneAsync(s => s.Id == e.Id);
 
-        public async Task RemoveAsync(string id) =>
+        public async Task RemoveAsync(int id) =>
             await _events.DeleteOneAsync(s => s.Id == id);
     }
 }

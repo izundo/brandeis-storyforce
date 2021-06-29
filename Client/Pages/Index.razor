@@ -16,7 +16,7 @@
         </h5>*@
 </div>
 <div class="row">
-    <EditForm EditContext="editContext"  class="col s12">
+    <EditForm EditContext="editContext" class="col s12">
         <ObjectGraphDataAnnotationsValidator />
         <ValidationSummary />
 
@@ -51,7 +51,8 @@
                             Load files from your current device, Google Drive, or other online locations<br />
                             You may load multiple files at once. We recommend you load videos, written documents, and sound files, one at a time to make the upload easier.
                         </div>
-                    </div>
+                    </div>                    
+
                     <div class="row">
                         <div class="col s12 m4 l4">
                             <div class="file-field input-field">
@@ -86,6 +87,32 @@
         </div>
 
         <div class="col s12 m12 l12" id="previewFiles">
+            <!-- Modal -->
+
+            <div id="modal1" class="modal @modalClass" style="display:@modalDisplay; position:absolute; top: 50%; width: 800px!important; position: fixed">
+                <div class="modal-content">
+                    <h4>Upload Progress</h4>
+                    <div class="progress @modalProgressClass">
+                        <div class="indeterminate"></div>
+                    </div>
+                    <div class="success-message @successClass">Your files were uploaded successfully!</div>
+                    <div class="@errorMessageClass">@submissionFailedMessage</div>
+                </div>
+                <div class="modal-footer @modalFooterClass">
+                    <a class="modal-action modal-close waves-effect waves-green btn-flat" @onclick="@CloseModalWindow">Close</a>
+                </div>
+            </div>
+
+            <div id="modal2" class="modal show" style="display:@modalDisplayRequired; position:absolute; top: 50%; width: 800px!important; position: fixed">
+                <div class="modal-content">
+                    <h4 style="color:red">Error</h4>
+                    <div class="success-message"> Files: @filenameVali.TrimEnd(',') <br /> - The Description is required filed!</div>
+                </div>
+                <div class="modal-footer">
+                    <a class="modal-action modal-close waves-effect waves-green btn-flat" @onclick="@CloseValidateModalWindow">Close</a>
+                </div>
+            </div>
+
             @foreach (var (file, index) in Submission.UploadFiles.Select((file, index) => (file, index)))
             {
                 <div class="col s12 m6 l4">
@@ -100,7 +127,7 @@
                         }
                         else
                         {
-                            <div class="card-image" style="background: url('@file.PreviewUrl') no-repeat center center;background-size: cover;height: 300px;">
+                            <div class="card-image" style="background: url('@file.PreviewUrl') no-repeat center center; background-size: cover; height: 300px;">
                                 <a class="btn-floating mb-1 waves-effect waves-light remove-file" @onclick="@(() => RemoveFile(file))">
                                     <i class="material-icons">clear</i>
                                 </a>
@@ -109,8 +136,8 @@
 
                         <div id="modal2" class="modal show" style="display:@modalDisplayRequired; position:absolute; width: 800px!important; position: fixed">
                             <div class="modal-content">
-                                <h4>Upload Progress</h4>
-                                <div class="success-message">The Description is required filed!</div>
+                                <h4 style="color:red">Error</h4>
+                                <div class="success-message"> Files: @filenameVali.TrimEnd(',') <br /> - The Description is required filed!</div>
                             </div>
                             <div class="modal-footer">
                                 <a class="modal-action modal-close waves-effect waves-green btn-flat" @onclick="@CloseValidateModalWindow">Close</a>
@@ -172,9 +199,9 @@
                                                 <InputSelect @bind-Value=file.Class placeholder="Select Graduating Year">
                                                     <option value="">Select Graduating Year</option>
                                                     @foreach (var year in this.Classes)
-                                                                {
+                                                    {
                                                         <option value="@year">@year</option>
-                                                                }
+                                                    }
                                                 </InputSelect>
                                             </div>
                                         }
@@ -215,7 +242,7 @@
                                     <a class="btn-flat waves-effect blue-text text-darken-3 duplicate-data p-0" @onclick="@(() => DuplicateFileAttributes(file))">Copy Info to All Other Files</a>
                                     <br /><i>You can make changes to individual files</i>
                                 </div>
-                            }
+                            }                        
                         </div>
                     </div>
                 </div>
@@ -228,30 +255,16 @@
                     Reset
                 </a>
             </div>
-        </div>
-        <div class="input-field col s6">
-            <a class="btn cyan waves-effect waves-light right" @onclick="ClickHandler" id="submit-button" >
-                Submit <i class="material-icons right">send</i>
-            </a>
+            <div class="input-field col s6">
+                <a class="btn cyan waves-effect waves-light right" @onclick="ClickHandler" id="submit-button">
+                    Submit <i class="material-icons right">send</i>
+                </a>
+            </div>
         </div>
     </EditForm>
 </div>
 
-<!-- Modal -->
 
-<div id="modal1" class="modal @modalClass" style="display:@modalDisplay">
-    <div class="modal-content">
-        <h4>Upload Progress</h4>
-        <div class="progress @modalProgressClass">
-            <div class="indeterminate"></div>
-        </div>
-        <div class="success-message @successClass">Your files were uploaded successfully!</div>
-        <div class="@errorMessageClass">@submissionFailedMessage</div>
-    </div>
-    <div class="modal-footer @modalFooterClass">
-        <a class="modal-action modal-close waves-effect waves-green btn-flat" @onclick="@CloseModalWindow">Close</a>
-    </div>
-</div>
 
 
 

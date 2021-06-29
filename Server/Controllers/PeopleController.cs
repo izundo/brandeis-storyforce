@@ -13,9 +13,9 @@ namespace StoryForce.Server.Controllers
     [ApiController]
     public class PeopleController : ControllerBase
     {
-        private PeopleService _peopleService;
+        private readonly IPeopleService _peopleService;
 
-        public PeopleController(PeopleService peopleService)
+        public PeopleController(IPeopleService peopleService)
         {
             this._peopleService = peopleService;
         }

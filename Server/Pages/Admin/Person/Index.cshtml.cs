@@ -1,18 +1,15 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using StoryForce.Server.Services;
-using StoryForce.Shared.Models;
 
 namespace StoryForce.Server.Pages.Admin.Person
 {
     public class IndexModel : PageModel
     {
-        private PeopleService _peopleService;
-        public IndexModel(PeopleService peopleService)
+        private readonly IPeopleService _peopleService;
+        public IndexModel(IPeopleService peopleService)
         {
             this._peopleService = peopleService;
         }
@@ -26,7 +23,7 @@ namespace StoryForce.Server.Pages.Admin.Person
             return Page();
         }
 
-        public async Task<IActionResult> OnPostDeleteAsync(string id)
+        public async Task<IActionResult> OnPostDeleteAsync(int id)
         {
             await this._peopleService.RemoveAsync(id);
             return new RedirectToPageResult("/Admin/Person/Index");

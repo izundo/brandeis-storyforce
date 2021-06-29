@@ -86,7 +86,7 @@ namespace StoryForce.Server.Services
 
                     var client = new SendGridClient(apiKey);
                     var from = new EmailAddress(options.Sender);
-                    var to = new EmailAddress("steve@izundo.com");//new EmailAddress(request.To);
+                    var to = new EmailAddress(request.To); //new EmailAddress("steve@izundo.com");
                     var msg = MailHelper.CreateSingleEmail(from, to, request.Subject, null, request.Content);
                     var response = await client.SendEmailAsync(msg, token);
 

@@ -61,7 +61,7 @@ namespace StoryForce.Server.ViewModels
             
             return new Submission
             {
-                Id = ObjectId.GenerateNewId().ToString(),
+                //TODO Remove Id = ObjectId.GenerateNewId().ToString(),
                 Title = this.Title,
                 Description = this.Description,
                 SubmittedFiles = files,

@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using System.Text;
 
 namespace StoryForce.Shared.Models
 {
@@ -18,5 +16,7 @@ namespace StoryForce.Shared.Models
         [Range(1960, 3000)]
 
         public int? Year { get; set; }
+
+        public ICollection<StoryFile> StoryFiles { get; set; }
     }
 }

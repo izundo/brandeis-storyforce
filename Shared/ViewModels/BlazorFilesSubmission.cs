@@ -1,14 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.IO;
 using System.Linq;
-using System.Net.Mime;
-using System.Runtime.InteropServices.ComTypes;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components.Forms;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.WebUtilities;
 using MongoDB.Bson;
 using StoryForce.Shared.Models;
 
@@ -19,10 +12,8 @@ namespace StoryForce.Shared.ViewModels
         public BlazorFilesSubmission()
         {
             this.SubmittedBy = new Person();
-            this.RequestedBy = new Person();
             this.FileMetaDataList = new List<FileMeta>();
-            this.UploadFiles = new List<UploadFile>();
-            this.Event = new Event();            
+            this.UploadFiles = new List<UploadFile>();            
         }
 
         [Required]
@@ -50,16 +41,13 @@ namespace StoryForce.Shared.ViewModels
         [ValidateComplexType]
         public Person SubmittedBy { get; set; }
 
-        public Person RequestedBy { get; set; }
+        public Person RequestedBy { get; set; }       
 
         public Submission ConvertToEntity()
         {
-            var submissionId = ObjectId.GenerateNewId().ToString();
             var createdAt = DateTime.UtcNow;
             return new Submission
             {
-                Id = submissionId,
-                SubmittedBy = this.SubmittedBy,
                 Title = $"{this.SubmittedBy.Name}-{createdAt.ToShortTimeString()} {createdAt.ToShortDateString()}",
                 Description = $"{UploadFiles.Count} files by {this.SubmittedBy.Name}",
                 CreatedAt = createdAt,
@@ -73,10 +61,10 @@ namespace StoryForce.Shared.ViewModels
                     DownloadUrl = file.DownloadUrl,
                     ThumbnailUrl = file.ThumbnailUrl,
                     UpdatedAt = createdAt,
-                    SubmissionId = submissionId,
                     SubmittedBy = this.SubmittedBy,
                     FeaturedPeople = file.FeaturedPeople,
-                    RequestedBy = this.RequestedBy
+                    RequestedBy = file.RequestedBy,
+                    Event = file.Event                    
                 }).ToList(),
             };
         }
