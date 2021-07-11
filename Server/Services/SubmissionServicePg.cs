@@ -23,12 +23,14 @@ namespace StoryForce.Server.Services
                 .Submissions
                 .Include(x => x.ApprovedFiles)
                 .Include(x => x.RejectedFiles)
-                .Include(x => x.SubmittedFiles)
+                .Include(x => x.SubmittedFiles).ThenInclude(m => m.Notes)
                 .Include(x => x.SubmittedBy)
                 .Include(x => x.ReviewedBy)
                 .Include(x => x.ApprovedBy)
                 .Include(x => x.Event)
                 .Include(x => x.History)
+                .Include(x => x.SubmittedFiles).ThenInclude(m => m.Tags)
+                .Include(x => x.NoteFile)
                 .ToListAsync();
         }
 
@@ -38,15 +40,43 @@ namespace StoryForce.Server.Services
                 .Submissions
                 .Include(x => x.ApprovedFiles)
                 .Include(x => x.RejectedFiles)
-                .Include(x => x.SubmittedFiles)
+                .Include(x => x.SubmittedFiles).ThenInclude(m => m.Notes)
                 .Include(x => x.SubmittedBy)
                 .Include(x => x.ReviewedBy)
                 .Include(x => x.ApprovedBy)
                 .Include(x => x.Event)
                 .Include(x => x.History)
+                .Include(x => x.SubmittedFiles).ThenInclude(m => m.Tags)
+                .Include(x => x.NoteFile)
                 .FirstOrDefaultAsync(s => s.Id == id);
         }
+        public async Task<List<Submission>> GetBySubmittedByIdAsync(int id)
+             => await _dbContext
+                .Submissions
+                .Include(x => x.ApprovedFiles)
+                .Include(x => x.RejectedFiles)
+                .Include(x => x.SubmittedFiles).ThenInclude(m => m.Notes)
+                .Include(x => x.SubmittedBy)
+                .Include(x => x.ReviewedBy)
+                .Include(x => x.ApprovedBy)
+                .Include(x => x.Event)
+                .Include(x => x.History)
+                .Include(x => x.SubmittedFiles).ThenInclude(m => m.Tags)
+                .Include(x => x.NoteFile)
+                .Where(m => m.SubmittedBy.Id == id)
+                .ToListAsync();
 
+        public async Task<List<Submission>> GetBySubmittedByInputValueAsync(string value)
+        {
+            var list = _dbContext.Submissions.Include(m => m.SubmittedFiles).ThenInclude(x => x.Tags).Include(m=>m.SubmittedBy).Include(m=>m.ReviewedBy)
+                .Where(m => m.Title.ToLower().Contains(value.ToLower())
+            || m.Description.ToLower().Contains(value.ToLower())
+            || m.SubmittedFiles.Any(sub => sub.Title.ToLower().Contains(value.ToLower()))
+            || m.SubmittedFiles.Any(sub => sub.Description.ToLower().Contains(value.ToLower())
+            || m.SubmittedFiles.Any(sub => sub.Tags.Any(tag => tag.Name.ToLower().Contains(value.ToLower()))))
+            ).ToList();
+            return list;
+        }
         public async Task RemoveWithFilesAsync(int id)
         {
             await using var session = await _dbContext.Database.BeginTransactionAsync();
@@ -64,5 +94,5 @@ namespace StoryForce.Server.Services
             }
         }
     }
-    
+
 }

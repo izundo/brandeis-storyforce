@@ -5,17 +5,19 @@
     ViewData["Title"] = "Submission Details";
 }
 @inject ImageService ImageService
+@*@inject INoteService NoteService*@
 @section HeadScripts
 {
     <link rel="stylesheet" type="text/css" href="~/materialize-admin/app-assets/css/pages/app-email-content.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.18/dist/sweetalert2.min.css">
 }
 
 <div class="app-email-content">
     <div class="content-area content-right">
         <div class="app-wrapper">
             <div class="app-search">
-                <i class="material-icons mr-2 search-icon">search</i>
-                <input type="text" placeholder="Search Mail" class="app-filter" id="email_filter">
+                <i class="material-icons mr-2 search-icon search-file-button">search</i>
+                <input type="text" placeholder="Search File" class="app-filter input-search-value" id="email_filter">
             </div>
             <div class="card card-default scrollspy border-radius-6 fixed-width">
                 <div class="card-content pt-0">
@@ -68,37 +70,202 @@
                             <hr>
                             <!-- Email Footer -->
                             <div class="email-footer">
-                                <h6 class="footer-title"> (@Model.Submission.SubmittedFiles.Count)</h6>
-                                <div class="footer-action">
-                                    <div class="attachment-list">
-                                        @foreach (var file in Model.Submission.SubmittedFiles)
-                                        {
-                                        <div class="attachment">
-                                            @if (file.Type.StartsWith("image/"))
-                                                {
-                                            <img src="@file.GetResizedImageUrl(200, 200)" alt="@file.Title" class="responsive-img attached-image">
-                                                }
-                                            <div class="title">@file.Title</div>
-                                            <div class="description">@file.Description</div>
-                                            <div class="size">
-                                                @if (file.Size > 0)
-                                                    {
-                                                <span class="grey-text">(@file.SizeText)</span>
-                                                    }
-                                            </div>
-                                            <div class="links">
-                                                <a href="@ImageService.GetPreSignedUrl(file.Key)" class="right" target="_blank">
-                                                    <i class="material-icons">file_download</i>
-                                                </a>
-                                            </div>
-                                        </div>
-                                        }
-                                    </div>
-                                    <div class="footer-buttons">
+                                <div>
+                                    <h6 class="footer-title"> (@Model.Submission.SubmittedFiles.Count)</h6>
+                                    <div class="footer-buttons" style="text-align: right">
                                         <form asp-page-handler="delete" asp-route-id="@Model.Submission.Id" method="post">
                                             <button class="btn delete mb-1"><i class="material-icons left">delete</i><span>Delete</span></button>
                                         </form>
                                     </div>
+                                    <div class="row note-group">
+                                        <div class="col s10" style="width: 40%">
+                                            <textarea type="text" placeholder=" Input Note for group" class="new-note-group-input" style="border: none; border-bottom: 1px solid"></textarea>
+                                        </div>
+                                        <div class="col s2" style="width:19%">
+                                            <button class="btn-small edit mb-1 teal lighten-2 new-note-group-button" data-submission-id="@Model.Submission.Id" style="width: 40%">
+                                                <i class="material-icons left" style="margin-left: -40%; width:0%">save</i><span style="margin-left: 30%">Save</span>
+                                            </button>
+                                        </div>
+                                        @foreach (var note in Model.Submission.Notes)
+                                        {
+                                            <div class="row note-item-group mt-1" style="width:50%">
+                                                <div class="col s7 note-text" style="width:65%; margin-left:1%">@note.Text</div>
+                                                <div class="col s7 note-input" style="display: none; width:66%">
+                                                    @*<input type="text" placeholder="Note" value="@item.Text" />*@
+                                                    <textarea style="border: none; border-bottom: 1px solid">@note.Text</textarea>
+                                                </div>
+                                                <div class="col s2">
+                                                    <button class="btn-small edit mb-1 teal lighten-2 edit-note-button" data-note-id="@note.Id" style="width:100%">
+                                                        <i class="material-icons left" style="width: 0px; margin-left: -45%">edit</i>
+                                                        <span style=" margin-right: -40%">Edit</span>
+                                                    </button>
+                                                </div>
+
+                                                <div class="col s2" style="text-align: end">
+                                                    <button class="btn-small mb-1 delete-note-button" data-note-id="@note.Id" style="width:100%">
+                                                        <i class="material-icons left" style="width: 0px; margin-left: -45%">delete</i>
+                                                        <span style=" margin-right: -40%">Delete</span>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+
+                                <div class="footer-action">
+                                    <div class="attachment-list" style="flex-direction: column; width:50%">
+                                        @{
+                                            int row = 1;
+                                            @foreach (var file in Model.Submission.SubmittedFiles)
+                                            {
+                                                <div class="attachment">
+                                                    @if (file.Type.StartsWith("image/"))
+                                                    {
+                                                        <img src="@file.GetResizedImageUrl(200, 200)" alt="@file.Title" class="responsive-img attached-image">
+                                                    }
+                                                    <div class="title" style="font-size:25px">@file.Title</div>
+                                                    <div class="description">@file.Description</div>
+                                                    <div class="size">
+                                                        @if (file.Size > 0)
+                                                        {
+                                                            <span class="grey-text">(@file.SizeText)</span>
+                                                        }
+                                                    </div>
+                                                    <div class="links text-center" style="margin-left: 97%;">
+                                                        <a href="@ImageService.GetPreSignedUrl(file.Key)" class="right" target="_blank">
+                                                            <i class="material-icons">file_download</i>
+                                                        </a>
+                                                    </div>
+                                                    <div class="note" style="width:100%">
+                                                        <div class="row new-note">
+                                                            <div class="col s10" style="width: 80%">
+                                                                <textarea type="text" placeholder=" Input Note" class="new-note-input" style="border: none; border-bottom: 1px solid"></textarea>
+                                                            </div>
+                                                            <div class="col s2" style="width:19%">
+                                                                <button class="btn-small edit mb-1 teal lighten-2 new-note-button" data-file-id="@file.Id" style="width: 90%">
+                                                                    <i class="material-icons left" style="margin-left: -40%; width:0%">save</i><span style="margin-left: 30%">Save</span>
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                        <br />
+                                                        @if (file.Notes != null)
+                                                        {
+                                                            <p style="text-align: center"><i>Notes:</i></p>
+                                                            foreach (var item in file.Notes)
+                                                            {
+                                                                <div class="row note-item mt-2">
+                                                                    <div class="col s7 note-text" style="width:65%">@item.Text</div>
+                                                                    <div class="col s7 note-input" style="display: none; width:66%">
+                                                                        @*<input type="text" placeholder="Note" value="@item.Text" />*@
+                                                                        <textarea style="border: none; border-bottom: 1px solid">@item.Text</textarea>
+                                                                    </div>
+                                                                    <div class="col s2">
+                                                                        <button class="btn-small edit mb-1 teal lighten-2 edit-note-group-button" data-note-id="@item.Id" style="width:100%">
+                                                                            <i class="material-icons left" style="width: 0px; margin-left: -45%">edit</i>
+                                                                            <span style=" margin-right: -40%">Edit</span>
+                                                                        </button>
+                                                                    </div>
+
+                                                                    <div class="col s2" style="text-align: end">
+                                                                        <button class="btn-small mb-1 delete-note-button" data-note-id="@item.Id" style="width:100%">
+                                                                            <i class="material-icons left" style="width: 0px; margin-left: -45%">delete</i>
+                                                                            <span style=" margin-right: -40%">Delete</span>
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+                                                            }
+                                                        }
+                                                    </div>
+                                                    @*Tags*@
+                                                    <p class="mt-5" style="margin-left:-91%"><i>Add Tags</i></p>
+                                                    <div id="div_tags_type row" style=" width: 40%; margin-left: -60%">
+                                                        <select class="show tagstype">
+                                                            <option value="">Select type tags</option>
+                                                            <option value="brandtags">Brand tags</option>
+                                                            <option value="processtags">Process tags</option>
+                                                        </select>
+                                                    </div>
+                                                    <div id="div_brand_tags" class="new-tags-brand" style="display: none; width: 99%">
+                                                        <div class="row" id="brand_tags">
+                                                            <div class="input-field col s12">
+                                                                <textarea type="text" id="autocomplete-input-brand" class="autocomplete_brand" style=" margin-left: -1%; border:none; border-bottom: 1px solid"></textarea>
+                                                                <label for="autocomplete-input">Input tags type brand</label>
+                                                            </div>
+                                                        </div>
+                                                        <div style="text-align:right">
+                                                            <button class="btn-small edit mb-1 teal lighten-2 new-tags-button" data-file-id="@file.Id" style="width:14%; margin-right: 2%;"><i class="material-icons left" style="margin-left: -40%">save</i><span style="margin-left: -25%">Save</span></button>
+                                                        </div>
+                                                    </div>
+                                                    <div id="div_process_tags" class="new-tags-process" style="display:none; width: 95%;">
+                                                        <div class="row" id="process_tags">
+                                                            <div class="input-field">
+                                                                <textarea type="text" id="autocomplete-input-process" class="autocomplete_process" style=" margin-left: -1%; border:none; border-bottom: 1px solid"></textarea>
+                                                                <label for="autocomplete-input">Input tags type process</label>
+                                                            </div>
+                                                        </div>
+                                                        <textarea type="text" placeholder="Note tags process" class="new-note-process" style="margin-left: -3%; width: 103%; border:none; border-bottom: 1px solid"></textarea>
+                                                        @*<select id="process_tags" class="value_tags">
+                                                                <option value="">Select Tags</option>
+                                                                <option value="Pending">Pending</option>
+                                                                <option value="InternalUseOnly-NotForPublicView">Internal use only - Not for public view</option>
+                                                                <option value="PotentialForNewsletterMedia">Potential for newsletter, media</option>
+                                                                <option value="InEditingProcess">In editing process</option>
+                                                                <option value="EditedForMediaUse">Edited for Media Use</option>
+                                                                <option value="UsedInMedia">Used in Media</option>
+                                                                <option value="NewTags">New tags</option>
+                                                            </select>*@
+                                                        <div style="text-align:right">
+                                                            <button class="btn-small edit mb-1 teal lighten-2 new-tags-button" data-file-id="@file.Id" style="width:15%">
+                                                                <i class="material-icons left" style="width: 0px; margin-left: -42%">save</i>
+                                                                <span>Save Tags</span>
+                                                            </button>
+                                                            @*<button class="btn-small edit mb-1 teal lighten-2 add-process-tags-button" data-file-id="@file.Id" style=" width: 21%;">
+                                                                    <i class="material-icons left" style="width: 0px; margin-left: -30%">add</i>
+                                                                    <span>Add Note</span>
+                                                                </button>*@
+                                                        </div>
+                                                    </div>
+                                                    @*<div class="note-tag-process" style="display:none; text-align: right; width:98%; margin-left:-1%">
+                                                            <input type="text" placeholder="Note tags process" class="new-note-process" />
+                                                            <button class="btn-small edit teal lighten-2 new-note-process-button" data-file-id="@file.Id"><i class="material-icons left">save</i><span>Save Note</span></button>
+                                                            <button class="btn-small waves-effect waves-light close-tags-process-button"><i class="material-icons left">close</i><span>Close</span></button>
+                                                        </div>*@
+                                                    @if (file.Tags != null)
+                                                    {
+                                                        <p><i>Tags:</i></p>
+                                                        foreach (var tag in file.Tags)
+                                                        {
+                                                            <div class="row tags-item mt-2" style="width:100%">
+                                                                <div class="col s7 tags-text" style="width:65%; margin-left:-2%">@tag.Name</div>
+                                                                <div class="col s7 tags-name" style="display: none; width:66%; margin-left:-2%">
+                                                                    <textarea style="border: none; border-bottom: 1px solid">@tag.Name</textarea>
+                                                                </div>
+                                                                <div class="col s2">
+                                                                    <button class="btn-small edit mb-1 teal lighten-2 edit-tags-button" data-tag-id="@tag.Id" style="width:100%">
+                                                                        <i class="material-icons left" style="width: 0px; margin-left: -45%">edit</i>
+                                                                        <span style=" margin-right: -40%">Edit</span>
+                                                                    </button>
+                                                                </div>
+                                                                <div class="col s2" style="text-align: end">
+                                                                    <button class="btn-small mb-1 delete-tags-button" data-tag-id="@tag.Id" style="width:100%">
+                                                                        <i class="material-icons left" style="width: 0px; margin-left: -45%">delete</i>
+                                                                        <span style=" margin-right: -40%">Delete</span>
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        }
+                                                    }
+                                                </div>
+                                                <a class="btn-small edit mb-1 teal lighten-2 edit-note-group-button" data-note-id="@file.Id" href="/storyFile/@file.Id" style="width:21%; margin-left:180%">
+                                                    <i class="material-icons left" style="width: 0px; margin-left: -18%">edit</i>
+                                                    <span style=" margin-right: -15%">Edit StoryFile</span>
+                                                </a>
+                                                row++;
+                                                <hr style="width:1550px; margin-top:5%" />
+                                            }
+                                        }
+                                    </div>
+
                                 </div>
                                 <div class="reply-box d-none">
                                     <form action="#">
@@ -162,3 +329,323 @@
         </div>
     </div>
 </div>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.18/dist/sweetalert2.min.js"></script>
+<script>
+
+    $(document).ready(function () {
+
+        //------Note------
+        $(".attachment-list").on("click", ".edit-note-button", function () {
+            console.log("note-id", $(this).data("note-id"));
+            var mode = $(this).find('i').text();
+            if (mode === 'save') {
+                $.ajax({
+                    url: '/api/note/' + $(this).data("note-id"),
+                    type: 'PUT',
+                    contentType: "application/json",
+                    data: JSON.stringify({
+                        text: $(this).parents('.note-item').find('.note-input textarea').val(),
+                        id: $(this).data("note-id")
+                    })
+                }).then(function (res) {
+                    window.location.reload();
+                });
+            }
+            else {
+                $(this).find('i').text('save');
+                $(this).find('span').text('Save');
+                $(this).parents('.note-item').find('.note-text').hide();
+                $(this).parents('.note-item').find('.note-input').show();
+            }
+
+        });
+
+        $(".note-group").on("click", ".edit-note-button", function () {
+            console.log("note-id", $(this).data("note-id"));
+            var mode = $(this).find('i').text();
+            if (mode === 'save') {
+                $.ajax({
+                    url: '/api/note/' + $(this).data("note-id"),
+                    type: 'PUT',
+                    contentType: "application/json",
+                    data: JSON.stringify({
+                        text: $(this).parents('.note-item-group').find('.note-input textarea').val(),
+                        id: $(this).data("note-id")
+                    })
+                }).then(function (res) {
+                    window.location.reload();
+                });
+            }
+            else {
+                $(this).find('i').text('save');
+                $(this).find('span').text('Save');
+                $(this).parents('.note-item-group').find('.note-text').hide();
+                $(this).parents('.note-item-group').find('.note-input').show();
+            }
+
+        });
+
+        $(".attachment-list").on("click", ".new-note-button", function () {
+            debugger
+            var newNoteText = $(this).parents('.new-note').find('.new-note-input').val();
+            $.ajax({
+                url: '/api/note',
+                type: 'POST',
+                contentType: "application/json",
+                data: JSON.stringify({
+                    text: newNoteText,
+                    username: '@User?.Identity?.Name',
+                    storyFileId: $(this).data("file-id")
+                })
+            }).then(function (res) {
+                window.location.reload();
+            });
+
+        });
+        $(".email-footer").on("click", ".new-note-group-button", function () {
+            debugger
+            var newNoteText = $(this).parents('.note-group').find('.new-note-group-input').val();
+            var submissionId = $(this).data("submission-id");
+            $.ajax({
+                url: '/api/note',
+                type: 'POST',
+                contentType: "application/json",
+                data: JSON.stringify({
+                    text: newNoteText,
+                    username: '@User?.Identity?.Name',
+                    storyFileId: $(this).data("file-id"),
+                    SubmissionId: submissionId
+                })
+            }).then(function (res) {
+                window.location.reload();
+            });
+
+        });
+
+        $(".attachment-list").on("click", ".delete-note-button", function () {
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You won't be able to revert this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Ok'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: '/api/note/' + $(this).data("note-id"),
+                        type: 'DELETE'
+                    }).then(function (res) {
+                        Swal.fire(
+                            'Deleted!',
+                            "The note was deleted",
+                            'success'
+                        ).then(function() {
+                            window.location.reload();
+                        });
+
+                    });
+
+                }
+            });
+
+
+        });
+
+        $(".note-group").on("click", ".delete-note-button", function () {
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You won't be able to revert this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Ok'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: '/api/note/' + $(this).data("note-id"),
+                        type: 'DELETE'
+                    }).then(function (res) {
+                        Swal.fire(
+                            'Deleted!',
+                            "The note was deleted",
+                            'success'
+                        ).then(function () {
+                            window.location.reload();
+                        });
+
+                    });
+
+                }
+            });
+
+
+        });
+
+        //------Tags------
+
+        $(".tagstype").change(function () {
+            let select = $(this).find("option:selected").val();
+            if (select == "brandtags") {
+                $(this).parents(".attachment").find('.new-tags-brand').css("display", "block");
+                $(this).parents(".attachment").find('.new-tags-process').css("display", "none");
+            }
+            else if (select == "processtags") {
+                $(this).parents(".attachment").find('.new-tags-brand').css("display", "none");
+                $(this).parents(".attachment").find('.new-tags-process').css("display", "block");
+                $(this).parents(".attachment").find('.note-tag-process').css("display", "block");
+            }
+            else if (select == "") {
+                $(this).parents(".attachment").find('.new-tags-brand').css("display", "none");
+                $(this).parents(".attachment").find('.new-tags-process').css("display", "none");
+                $(this).parents(".attachment").find('.note-tag-process').css("display", "none");
+            }
+        })
+
+        $('textarea.autocomplete_brand').autocomplete({
+            data: {
+                "Confident Leader (Outcome)": null,
+                "Joyful Learner (Outcome)": null,
+                "Global Citizen (Outcome)": null,
+                "Curriculum (Process)": null,
+                "Culture (Process)": null,
+                "Character (Process)": null
+            },
+        });
+        $('textarea.autocomplete_process').autocomplete({
+            data: {
+                "Pending": null,
+                "Internal use only - Not for public view": null,
+                "Potential for newsletter, media": null,
+                "In editing process": null,
+                "Edited for Media Use": null,
+                "Used in Media": null
+            },
+        });
+
+        $(".attachment-list").on("click", ".new-tags-button", function () {
+            debugger
+            var newTagsText = "";
+            var newTagsBrand = $(this).parents('.new-tags-brand').find('.autocomplete_brand').val();
+            var newTagsProcess = $(this).parents('.new-tags-process').find('.autocomplete_process').val();
+            if (newTagsBrand) {
+                newTagsText = newTagsBrand;
+            }
+            if (newTagsProcess) {
+                newTagsText = newTagsProcess;
+            }
+            var newNoteText = $(this).parents('.new-tags-process').find('.new-note-process').val();
+            var id = $(this).data("file-id");
+            $.ajax({
+                url: '/api/tag',
+                type: 'POST',
+                contentType: "application/json",
+                data: JSON.stringify({
+                    name: newTagsText,
+                    storyFileId: $(this).data("file-id")
+                })
+            }).then(function (res) {
+                if (newNoteText) {
+                    $.ajax({
+                        url: '/api/note',
+                        type: 'POST',
+                        contentType: "application/json",
+                        data: JSON.stringify({
+                            text: newNoteText,
+                            username: '@User?.Identity?.Name',
+                            storyFileId: id
+                        })
+                    }).then(function (res) {
+                        window.location.reload();
+                    });
+                }
+                window.location.reload();
+                });
+
+        });
+
+        @*$(".attachment-list").on("click", ".new-note-process-button", function () {
+            var newNoteText = $(this).parents('.note-tag-process').find('.new-note-process').val();
+            $.ajax({
+                url: '/api/note',
+                type: 'POST',
+                contentType: "application/json",
+                data: JSON.stringify({
+                    text: newNoteText,
+                    username: '@User?.Identity?.Name',
+                    storyFileId: $(this).data("file-id")
+                })
+            }).then(function (res) {
+                window.location.reload();
+            });
+
+        });*@
+
+        $(".attachment-list").on("click", ".close-tags-process-button", function () {
+            $(this).parents(".attachment").find('.note-tag-process').css("display", "none");
+            $(this).parents(".attachment").find('.new-tags-button').css("display", "block");
+        });
+
+        //$(".attachment-list").on("click", ".add-process-tags-button", function () {
+        //    $(this).parents(".attachment").find('.note-tag-process').css("display", "block");
+        //});
+
+        $(".attachment-list").on("click", ".delete-tags-button", function () {
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You won't be able to revert this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Ok'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: '/api/tag/' + $(this).data("tag-id"),
+                        type: 'DELETE'
+                    }).then(function (res) {
+                        Swal.fire(
+                            'Deleted!',
+                            "The tag was deleted",
+                            'success'
+                        ).then(function () {
+                            window.location.reload();
+                        });
+
+                    });
+
+                }
+            });
+        });
+
+        $(".attachment-list").on("click", ".edit-tags-button", function () {
+            console.log("note-id", $(this).data("tag-id"));
+            var mode = $(this).find('i').text();
+            if (mode === 'save') {
+                $.ajax({
+                    url: '/api/tag/' + $(this).data("tag-id"),
+                    type: 'PUT',
+                    contentType: "application/json",
+                    data: JSON.stringify({
+                        name: $(this).parents('.tags-item').find('.tags-name textarea').val(),
+                        id: $(this).data("tag-id")
+                    })
+                }).then(function (res) {
+                    window.location.reload();
+                });
+            }
+            else {
+                $(this).find('i').text('save');
+                $(this).find('span').text('Save');
+                $(this).parents('.tags-item').find('.tags-text').hide();
+                $(this).parents('.tags-item').find('.tags-name').show();
+            }
+
+        });      
+    });
+</script>
+

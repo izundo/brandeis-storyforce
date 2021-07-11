@@ -8,6 +8,7 @@ namespace StoryForce.Server.Services
     public class StoryFileService
     {
         private readonly IMongoCollection<StoryFile> _storyFiles;
+        private readonly IMongoCollection<Note> _notes;
 
         public StoryFileService(IMongoDbDatabaseSettings settings)
         {
@@ -15,6 +16,7 @@ namespace StoryForce.Server.Services
             var database = client.GetDatabase(settings.DatabaseName);
 
             _storyFiles = database.GetCollection<StoryFile>("StoryFiles");
+            _notes = database.GetCollection<Note>("Notes");
         }
 
         public async Task<List<StoryFile>> GetAsync() =>
@@ -43,5 +45,8 @@ namespace StoryForce.Server.Services
 
         public async Task RemoveAsync(int id) =>
             await _storyFiles.DeleteOneAsync(s => s.Id == id);
+
+        public async Task RemoveNoteAsync(int id) =>
+            await _notes.DeleteOneAsync(s => s.Id == id);
     }
 }

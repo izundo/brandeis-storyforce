@@ -43,16 +43,18 @@ namespace StoryForce.Server
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddSingleton(Configuration);
-            services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer(
-                    Configuration.GetConnectionString("DefaultConnection")));
+            // services.AddDbContext<ApplicationDbContext>(options =>
+            //     options.UseSqlServer(
+            //         Configuration.GetConnectionString("DefaultConnection")));
 
             services.AddDbContext<PgDbContext>(options =>
                 options.UseNpgsql(Configuration.GetConnectionString("PostgreConnection")));
 
             services.AddDatabaseDeveloperPageExceptionFilter();
-            services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
-                .AddEntityFrameworkStores<ApplicationDbContext>();
+            services.AddIdentity<Person, IdentityRole<int>>(options => options.SignIn.RequireConfirmedAccount = true)
+                .AddDefaultUI()
+                .AddDefaultTokenProviders()
+                .AddEntityFrameworkStores<PgDbContext>();
 
             services.AddDefaultAWSOptions(Configuration.GetAWSOptions());
             services.AddAWSService<IAmazonS3>();
@@ -66,15 +68,7 @@ namespace StoryForce.Server
             services.AddSingleton<IMongoDbDatabaseSettings>(sp =>
                 sp.GetRequiredService<IOptions<MongoDbDatabaseSettings>>().Value);
 
-            services.AddSingleton<SubmissionService>();
-            services.AddSingleton<StoryFileService>();
-            services.AddSingleton<PeopleService>();
-            services.AddSingleton<EventService>();
-
-            services.AddTransient<ISubmissionService, SubmissionServicePg>();
-            services.AddTransient<IStoryFileService, StoryFileServicePg>();
-            services.AddTransient<IPeopleService, PeopleServicePg>();
-            services.AddTransient<IEventService, EventServicePg>();
+            services.AddDataServices();
 
             services.AddSingleton<ImageService>();
 

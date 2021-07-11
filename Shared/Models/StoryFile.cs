@@ -18,7 +18,7 @@ namespace StoryForce.Shared.Models
 
         public string Description { get; set; }
 
-        public List<Note> Notes { get; set; }
+        public List<Note> Notes { get; set; }                                                      
 
         [EnumDataType(typeof(ApprovalStatusEnum))]
         public ApprovalStatusEnum Status { get; set; }
@@ -156,6 +156,6 @@ namespace StoryForce.Shared.Models
             byte[] bytes = Encoding.GetEncoding(28591).GetBytes(toEncode);
             string toReturn = System.Convert.ToBase64String(bytes);
             return toReturn;
-        }
+        }        
     }
 }

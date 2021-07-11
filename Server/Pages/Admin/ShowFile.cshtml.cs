@@ -13,10 +13,10 @@ namespace StoryForce.Server.Pages.Admin
     [Authorize]
     public class ShowFileModel : PageModel
     {
-        public UserManager<IdentityUser> _userManager;
+        public UserManager<StoryForce.Shared.Models.Person> _userManager;
         private readonly IStoryFileService _storyFileService;
 
-        public ShowFileModel(UserManager<IdentityUser> userManager, IStoryFileService storyFileService)
+        public ShowFileModel(UserManager<StoryForce.Shared.Models.Person> userManager, IStoryFileService storyFileService)
         {
             _userManager = userManager;
             _storyFileService = storyFileService;

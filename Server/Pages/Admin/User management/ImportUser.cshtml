@@ -1,0 +1,37 @@
+﻿@page "/usermanagement/importuser"
+@{
+    ViewData["Title"] = "Import User";
+}
+@model StoryForce.Server.Pages.Admin.ImportUserModel
+<div class="container">
+    @if (Model.ListErr != null)
+    {
+        <div class="modal" role="dialog" style="display:block; margin-top:10%; margin-top: 15%;">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-body">
+                        <h5 style="color:red">Error When Import File:</h5>
+                        @foreach (var item in Model.ListErr)
+                        {
+                            <p style="font-size:24px; font-family:Roboto">@item.Value</p>
+                        }
+                    </div>
+                    <div class="modal-footer">
+                        <a href="/usermanagement/importuser" class="btn btn-secondary" data-dismiss="modal">Close</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    <form method="post" enctype="multipart/form-data" id="submit-form">
+        <input type="file" name="file" style="margin-top: 14%" />
+        <div class="button-control" style="margin-left: 14%; margin-top: 2%">
+            <button class="btn-small edit teal" style="width: 10%" type="submit">
+                <i class="material-icons left" style="margin-left: -21%; width:0%">save</i><span style="margin-left: -1%">Import User</span>
+            </button>
+            <a class="btn-small save-user" style="width: 7%" href="/usermanagement">
+                <i class="material-icons left" style="margin-left: -40%; width:0%">close</i><span style="margin-left: 2%">Close</span>
+            </a>
+        </div>
+    </form>
+</div>

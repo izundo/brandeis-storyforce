@@ -19,20 +19,25 @@ namespace StoryForce.Server.Pages.Admin
     {
         private readonly IConfiguration _configuration;
         private readonly ISubmissionService _submissionService;
+        private readonly IStoryFileService _storyFileService;
         private readonly IAmazonS3 _s3Client;
         private WebClient _webClient;
 
         public IndexModel(IConfiguration configuration
             , ISubmissionService submissionService
-            , IAmazonS3 s3Client)
+            , IAmazonS3 s3Client, IStoryFileService storyFileService)
         {
             this._configuration = configuration;
             this._submissionService = submissionService;
+            this._storyFileService = storyFileService;
             this._s3Client = s3Client;
             this._webClient = new WebClient();
         }
 
         public IList<SubmissionDto> Submissions { get; set; }
+        public IList<StoryForce.Shared.Models.Submission> submissionSearch { get; set; }
+        public IList<StoryForce.Shared.Models.StoryFile> storyFile { get; set; }
+        public Search value { get; set; }
 
         public async Task<IActionResult> OnGetAsync()
         {
@@ -48,9 +53,22 @@ namespace StoryForce.Server.Pages.Admin
             return Page();
         }
 
+        public async Task<IActionResult> OnPostAsync(Search search)
+        {
+            if (!ModelState.IsValid)
+            {
+                return Page();
+            }
+            else
+            {
+                submissionSearch = await _submissionService.GetBySubmittedByInputValueAsync(search.value);
+                storyFile = await _storyFileService.GetByStoryFileByInputValueAsync(search.value);
+            }
+            return Page();
+        }
         protected string GetPreSignedUrl(string fileName)
         {
-            var s3bucketName= this._configuration.GetSection("AWS:S3:BucketName").Value;
+            var s3bucketName = this._configuration.GetSection("AWS:S3:BucketName").Value;
             var url = this._s3Client.GetPreSignedURL(
                 new GetPreSignedUrlRequest
                 {
@@ -61,6 +79,10 @@ namespace StoryForce.Server.Pages.Admin
                 });
 
             return url;
+        }
+        public class Search
+        {
+            public string value { get; set; }
         }
     }
 }

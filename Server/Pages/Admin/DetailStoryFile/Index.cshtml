@@ -1,0 +1,52 @@
+﻿@page   "/storyFile/{id}"
+@model StoryForce.Server.Pages.Admin.StoryFileDetail
+@{
+    ViewData["Title"] = "StoryFile Detail";
+}
+<div class="formview">
+    <form method="post">
+        <div class="edit-user">
+            <div class="content-area content-right">
+                <div class="app-wrapper">
+                    <div class="app-search">
+                        <i class="material-icons mr-2 search-icon">detail</i>
+                        @*<input type="text" placeholder="Search User" class="app-filter">*@
+                    </div>
+                </div>
+            </div>
+            <div class="detail-user">
+                <div class="detail-content" style="margin-left:15%; margin-top:10%">
+                    <p class="header">StoryFile Detail</p>
+                    @if (Model != null)
+                    {
+                        <div class="col s5">
+                            <label>Description</label>
+                            <input asp-for="StoryFile.Description" required>
+                        </div>
+                        <div class="col s5">
+                            <label>Is this file associated with an event or holiday?</label>
+                            <input asp-for="@Model.StoryFile.Event.Name" required>
+                        </div>
+                        <div class="col s5">
+                            <label>Description</label>
+                            <input asp-for="StoryFile.Description" required>
+                        </div>
+                        <div class="col s5">
+                            <label>If this file was requested by a staff member, please specify who:</label>
+                            <input asp-for="@Model.StoryFile.RequestedBy.Name" required>
+                        </div>
+
+                        <div style="text-align:right; width:20%">
+                            <button class="btn-small edit teal lighten-2 save-user" style="width: 32%" type="submit">
+                                <i class="material-icons left" style="margin-left: -40%; width:0%">save</i><span style="margin-left: 30%">Save</span>
+                            </button>
+                            <a class="btn-small save-user" style="width: 31%" href="/Admin/Submission/@Model.StoryFile.SubmissionId">
+                                <i class="material-icons left" style="margin-left: -40%; width:0%">close</i><span style="margin-left: 30%">Close</span>
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </form>
+</div>

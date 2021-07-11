@@ -1,7 +1,8 @@
 ﻿@using Microsoft.AspNetCore.Identity
+@using StoryForce.Shared.Models
 
-@inject SignInManager<IdentityUser> SignInManager
-@inject UserManager<IdentityUser> UserManager
+@inject SignInManager<Person> SignInManager
+@inject UserManager<Person> UserManager
 
 <ul class="navbar-nav">
 @if (SignInManager.IsSignedIn(User))
