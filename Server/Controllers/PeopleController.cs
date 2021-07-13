@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 using StoryForce.Server.Services;
 using StoryForce.Shared.Dtos;
 using StoryForce.Shared.Models;
+using Microsoft.AspNetCore.Http;
+using System.IO;
+using OfficeOpenXml;
 
 namespace StoryForce.Server.Controllers
 {
@@ -14,10 +17,14 @@ namespace StoryForce.Server.Controllers
     public class PeopleController : ControllerBase
     {
         private readonly IPeopleService _peopleService;
+        private readonly IStoryFileService _storyFileService;
+        private readonly ISubmissionService _submissionService;
 
-        public PeopleController(IPeopleService peopleService)
+        public PeopleController(IPeopleService peopleService, IStoryFileService storyFileService, ISubmissionService submissionService)
         {
             this._peopleService = peopleService;
+            this._storyFileService = storyFileService;
+            this._submissionService = submissionService;
         }
 
         [HttpGet]
@@ -79,6 +86,79 @@ namespace StoryForce.Server.Controllers
             };
 
             await this._peopleService.CreateMultipleAsync(people);
+        }        
+
+        // DELETE api/<People>/5
+        [HttpDelete("{id}")]
+        public async Task<ActionResult> Delete(int id)
+        {
+            var peopleInDb = await _peopleService.GetAsync(id);
+            if (peopleInDb == null)
+                return BadRequest($"People with id '{id}' not found.");
+            var storyFile = _storyFileService.GetBySubmittedByIdAsync(peopleInDb.Id);
+            if (storyFile != null)
+            {
+                foreach (var story in await storyFile)
+                {
+                    await _storyFileService.RemoveAsync(story);
+                }               
+            }
+            var submission = _submissionService.GetBySubmittedByIdAsync(peopleInDb.Id);
+            if (submission != null)
+            {
+                foreach (var sub in await submission)
+                {
+                    await _submissionService.RemoveAsync(sub);
+                }
+            }
+            await _peopleService.RemoveAsync(id);
+            return NoContent();
         }
+
+        //public async Task<ActionResult> ImportUser(IFormFile file)
+        //{
+        //    var list = new List<Person>();
+        //    if (file != null)
+        //    {
+        //        using (var stream = new MemoryStream())
+        //        {
+        //            await file.CopyToAsync(stream);
+        //            using (var package = new ExcelPackage(stream))
+        //            {
+        //                ExcelWorksheet worksheet = package.Workbook.Worksheets[0];
+        //                var rowcount = worksheet.Dimension.Rows;
+        //                for (int row = 2; row <= rowcount; row++)
+        //                {
+        //                    list.Add(new Person
+        //                    {                                
+        //                        Name = worksheet.Cells[row, 1].Value.ToString().Trim(),
+        //                        Email = worksheet.Cells[row, 2].Value.ToString().Trim(),
+        //                        ClassOfYear = Int32.Parse(worksheet.Cells[row, 3].Value.ToString()),
+        //                        PhoneNumber = worksheet.Cells[row, 4].Value.ToString().Trim(),
+        //                        UserName = worksheet.Cells[row, 5].Value.ToString().Trim(),
+        //                    });
+        //                }
+        //            }
+        //        }
+        //        foreach (var item in list)
+        //        {
+        //            var per = await _peopleService.GetByEmailAsync(item.Email);
+        //            if(per != null)
+        //            {
+        //                per.Name = item.Name;
+        //                per.Email = item.Email;
+        //                per.ClassOfYear = item.ClassOfYear;
+        //                per.PhoneNumber = item.PhoneNumber;
+        //                per.UserName = item.UserName;
+        //                await _peopleService.UpdateAsync(item.Id, per);
+        //            }
+        //            else
+        //            {
+        //                await _peopleService.CreateAsync(item);
+        //            }                    
+        //        }
+        //    }
+        //    return RedirectToAction("/usermanagement");
+        //}
     }
 }

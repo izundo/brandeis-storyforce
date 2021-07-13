@@ -1,0 +1,26 @@
+﻿.item {
+    display: flex;
+    flex-direction: column;
+    width: 95% !important;
+}
+
+    .item > .pre-item-content {
+        display: flex;
+        justify-content: space-between;
+    }
+
+.item-content {
+    font-size: .9rem;
+    line-height: 1.35rem;
+    display: -webkit-box;
+    overflow: hidden;
+    margin-top: .25rem;
+    text-overflow: ellipsis;
+    color: #616161;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+    .item-content:first-child {
+        font-size: 20px;
+    }

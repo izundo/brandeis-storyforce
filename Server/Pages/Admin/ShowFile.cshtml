@@ -5,7 +5,7 @@
 
 @model StoryForce.Server.Pages.Admin.ShowFileModel
 @inject ImageService ImageService
-@inject UserManager<IdentityUser> UserManager
+@inject UserManager<StoryForce.Shared.Models.Person> UserManager
 @{
     ViewData["Title"] = "Show File";
     Layout = "~/Pages/Shared/_LayoutFile.cshtml";

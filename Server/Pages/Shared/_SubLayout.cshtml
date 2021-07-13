@@ -1,0 +1,37 @@
+﻿@{
+    Layout = "~/Pages/Shared/_MaterialLayout.cshtml";
+}
+
+@section HeadScripts
+{
+    <link rel="stylesheet" type="text/css" href="~/materialize-admin/app-assets/css/pages/app-email-content.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.18/dist/sweetalert2.min.css">
+    @await RenderSectionAsync("HeadScripts", false)
+}
+
+@section FooterScripts{
+
+    @await RenderSectionAsync("FooterScripts", false)
+}
+
+<div class="app-email-content">
+    <div class="content-area content-right">
+        <div class="app-wrapper">
+            <div class="app-search">
+                <i class="material-icons mr-2 search-icon">search</i>
+                <input type="text" placeholder="Search Mail" class="app-filter" id="email_filter">
+            </div>
+            <div class="card card-default scrollspy border-radius-6 fixed-width">
+                <div class="card-content pt-0">
+                    <div class="row">
+                        <div class="col s12">
+
+                            @RenderBody()
+                    
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

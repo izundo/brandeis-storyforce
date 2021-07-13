@@ -72,5 +72,15 @@ namespace StoryForce.Server.Services
 
         public async Task RemoveAsync(int id) =>
             await _people.DeleteOneAsync(s => s.Id == id);
+
+        public Task<Person> GetByEmailAsync(string email)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public Task<List<Person>> GetByAllAsync()
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }

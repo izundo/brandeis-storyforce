@@ -231,3 +231,4 @@ Thumbs.db
 **/appsettings.staging.json
 **/appsettings.production.json
 
+Server/appsettings.Development .json

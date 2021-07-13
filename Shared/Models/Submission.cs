@@ -34,5 +34,8 @@ namespace StoryForce.Shared.Models
         public ICollection<StoryFile> ApprovedFiles { get; set; }
         
         public ICollection<StoryFile> RejectedFiles { get; set; }
+
+        public ICollection<Note> NoteFile { get; set; }
+        
     }
 }

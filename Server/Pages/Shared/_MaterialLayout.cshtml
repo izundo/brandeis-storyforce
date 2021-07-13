@@ -2,7 +2,7 @@
 @using Microsoft.AspNetCore.Identity
 @using StoryForce.Shared.Models
 @inject IConfiguration Configuration
-@inject UserManager<IdentityUser> UserManager
+@inject UserManager<Person> UserManager
 @{
     var colorPalette = new string[]
     {
@@ -158,7 +158,7 @@
                             <div class="sidebar-content">
                                 <div class="sidebar-header">
                                     <div class="sidebar-details">
-                                        <h5 class="m-0 sidebar-title"><i class="material-icons app-header-icon text-top">folder_open</i> Submissions</h5>
+                                        <h5 class="m-0 sidebar-title"><i class="material-icons app-header-icon text-top">folder_open</i> @ViewData["SideBar-Title"]</h5>
                                         <div class="row valign-wrapper mt-10 pt-2 animate fadeLeft">
                                             <div class="col s3 media-image">
                                                 <img src="@User.FindFirst(c => c.Type == "urn:google:picture")?.Value" alt="" class="circle z-depth-2 responsive-img">

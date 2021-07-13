@@ -1,0 +1,96 @@
+﻿@page "/searchresult/{myvalue}"
+@model StoryForce.Server.Pages.Admin.SearchStoryFile.IndexModel
+@using StoryForce.Server.Services
+@{
+    ViewData["Title"] = "Search";
+    Layout = "~/Pages/Shared/_SearchResultLayout.cshtml";
+}
+@inject ImageService ImageService
+
+@section HeadScripts
+{
+    <link rel="stylesheet" type="text/css" href="~/materialize-admin/app-assets/css/pages/app-email.css">
+    <link rel="stylesheet" type="text/css" href="~/materialize-admin/app-assets/css/custom/app-search.css">
+}
+<div class="app-email">
+    <div class="content-area content-right abc">
+        <div class="app-wrapper">
+            <div class="app-search">
+            </div>
+            <div id="result-search">
+            </div>
+            <div class="card card card-default scrollspy border-radius-6 fixed-width">
+                <div class="card-content p-0 pb-2" style="margin-top:10%">
+                    @if (Model.storyFiles != null && Model.storyFiles.Count > 0)
+                    {
+                        <div class="collection email-collection">
+                            @{
+                                int row = 1;
+                                foreach (var story in Model.storyFiles)
+                                {
+                                    <div class="email-brief-info collection-item animate fadeUp delay-@row">
+                                        <div class="list-left">
+                                            <label>
+                                                <input type="checkbox" name="foo" />
+                                                <span></span>
+                                            </label>
+                                            <div class="favorite">
+                                                <i class="material-icons button-favorite">star_border</i>
+                                            </div>
+                                            <div class="email-label">
+                                                <i class="material-icons">label_outline</i>
+                                            </div>
+                                        </div>
+
+                                        <a asp-page="/Admin/Submission/Index" asp-route-id="@story.SubmissionId" class="item" style="width: 95% !important;">
+                                            <div class="pre-item-content">
+                                                <div>
+                                                    <div class="item-content">
+                                                        @Html.DisplayFor(model => story.Title)
+                                                    </div>
+                                                    <div class="item-content">
+                                                        @Html.DisplayFor(model => story.Description)
+                                                    </div>
+                                                    <div class="item-content" style="color:#9e9c9c">
+                                                        (@story.SizeText)
+                                                    </div>
+                                                </div>
+                                                <div class="item-content" style="width:200px;">
+                                                    Created At: @(!string.IsNullOrEmpty(story.CreatedAt.ToString()) ? story.CreatedAt.ToString("dd/MM/yyyy") : null)
+                                                </div>
+                                            </div>
+
+                                            @if (story.Tags != null && story.Tags.Count > 0)
+                                            {
+                                                <div class="item-content">
+                                                    <span>Tags:</span>
+                                                    @foreach (var tag in story.Tags)
+                                                    {
+                                                        <span>
+                                                            <em>@Html.DisplayFor(model => tag.Name)</em>
+                                                        </span>
+                                                    }
+                                                </div>
+                                            }
+                                        </a>
+                                        <a href="@ImageService.GetPreSignedUrl(story.Key)" target="_blank" style="position: absolute;bottom: 0;left: 6rem;">
+                                            <i class="material-icons">file_download</i>
+                                        </a>
+                                    </div>
+
+                                    row++;
+                                }
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="not-found">
+                            <h6 class="center-align font-weight-500" style="color:black">No Results Found</h6>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -20,7 +20,9 @@ namespace StoryForce.Server.Controllers
         [HttpGet]
         public async Task<ActionResult<List<Event>>> Get()
         {
-            return await this._eventService.GetAsync();
+            var eve = await this._eventService.GetAsync();
+            var Event = eve.FindAll(m => m.Name != null);
+            return Ok(Event);
         }
 
         private async Task Seed()

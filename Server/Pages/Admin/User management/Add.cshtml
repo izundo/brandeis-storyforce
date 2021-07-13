@@ -1,0 +1,104 @@
+﻿@page "/usermanagement/add"
+@model StoryForce.Server.Pages.Admin.Person.AddModel
+@{
+    ViewData["Title"] = "Add user";
+}
+<div class="formview">
+    <form method="post">
+        <div class="add-user">
+            <div class="content-area content-right">
+                <div class="app-wrapper">
+                    <div class="app-search">
+                        <i class="material-icons mr-2 search-icon">detail</i>
+                        @*<input type="text" placeholder="Search User" class="app-filter">*@
+                    </div>
+                </div>
+            </div>
+            <div class="detail-user">
+                <div class="detail-content" style="margin-left:15%; margin-top:10%">
+                    <p class="header">Add User</p>
+                    <div class="col s5">
+                        <label>Name</label>
+                        <input asp-for="User.Name" required>
+                    </div>
+                    <div class="col s5">
+                        <label>Email</label>
+                        <input asp-for="@Model.User.Email" required>
+                    </div>
+                    <div class="col s5">
+                        <label>ClassOfYear</label>
+                        <input asp-for="@Model.User.ClassOfYear">
+                    </div>
+                    @*<div class="col s5">
+                            <label>AvatarUrl</label>
+                            <input asp-for="@Model.User.AvatarUrl">
+                        </div>
+                        <div class="col s5">
+                            <label>Type</label>
+                            <input asp-for="@Model.User.Type">
+                        </div>
+                        <div class="col s5">
+                            <label>SecurityStamp</label>
+                            <input asp-for="@Model.User.SecurityStamp">
+                        </div>
+                        <div class="col s5">
+                            <label>AccessFailedCount</label>
+                            <input asp-for="@Model.User.AccessFailedCount">
+                        </div>
+                        <div class="col s5">
+                            <label>ConcurrencyStamp</label>
+                            <input asp-for="@Model.User.ConcurrencyStamp">
+                        </div>
+                        <div class="col s5">
+                            <label>EmailConfirmed</label>
+                            <input type="checkbox" asp-for="@Model.User.EmailConfirmed">
+                        </div>
+                        <div class="col s5">
+                            <label>LockoutEnabled</label>
+                            <input asp-for="@Model.User.LockoutEnabled">
+                        </div>
+                        <div class="col s5">
+                            <label>LockoutEnd</label>
+                            <input asp-for="@Model.User.LockoutEnd">
+                        </div>
+                        <div class="col s5">
+                            <label>NormalizedEmail</label>
+                            <input asp-for="@Model.User.NormalizedEmail">
+                        </div>
+                        <div class="col s5">
+                            <label>NormalizedUserName</label>
+                            <input asp-for="@Model.User.NormalizedUserName">
+                        </div>
+                        <div class="col s5">
+                            <label>PasswordHash</label>
+                            <input asp-for="@Model.User.PasswordHash">
+                        </div>*@
+                    <div class="col s5">
+                        <label>PhoneNumber</label>
+                        <input asp-for="@Model.User.PhoneNumber">
+                    </div>
+                    @*<div class="col s5">
+                            <label>PhoneNumberConfirmed</label>
+                            <input asp-for="@Model.User.PhoneNumberConfirmed">
+                        </div>
+                        <div class="col s5">
+                            <label>TwoFactorEnabled</label>
+                            <input asp-for="@Model.User.TwoFactorEnabled">
+                        </div>*@
+                    @*<div class="col s5">
+                        <label>UserName</label>
+                        <input asp-for="@Model.User.UserName" required>
+                    </div>*@
+                    <div style="text-align:right; width:20%">
+                        <button class="btn-small edit mb-1 teal lighten-2 save-user" style="width: 31%" type="submit">
+                            <i class="material-icons left" style="margin-left: -40%; width:0%">save</i><span style="margin-left: 30%">Save</span>
+                        </button>
+                        <a class="btn-small save-user" style="width: 31%" href="/usermanagement">
+                            <i class="material-icons left" style="margin-left: -40%; width:0%">close</i><span style="margin-left: 30%">Close</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>

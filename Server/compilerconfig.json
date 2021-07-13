@@ -6,6 +6,9 @@
   {
     "outputFile": "wwwroot/css/app.css",
     "inputFile": "wwwroot/css/app.scss"
+  },
+  {
+    "outputFile": "wwwroot/scss/Admin/Submission/SubmissionIndex.css",
+    "inputFile": "wwwroot/scss/Admin/Submission/SubmissionIndex.scss"
   }
- 
 ]

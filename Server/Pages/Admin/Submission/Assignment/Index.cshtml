@@ -1,0 +1,68 @@
+﻿@page "/admin/submission/{id}/assignment"
+@model StoryForce.Server.Pages.Admin.Submission.Assignment.IndexModel
+@{
+    ViewData["Title"] = "Assignment";
+    Layout = "~/Pages/Shared/_SubLayout.cshtml";
+    ViewData["SideBar-Title"] = "Assignment";
+}
+@section HeadScripts
+{
+    <link rel="stylesheet" href="/materialize-admin/app-assets/vendors/select2/select2.min.css" type="text/css">
+    <link rel="stylesheet" href="/materialize-admin/app-assets/vendors/select2/select2-materialize.css" type="text/css">
+    <link rel="stylesheet" type="text/css" href="/materialize-admin/app-assets/css/pages/form-select2.min.css">
+    
+    
+    <!-- BEGIN: VENDOR CSS-->
+  
+
+    <link rel="stylesheet" type="text/css" href="/materialize-admin/app-assets/vendors/data-tables/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" type="text/css" href="/materialize-admin/app-assets/vendors/data-tables/extensions/responsive/css/responsive.dataTables.min.css">
+    <!-- END: VENDOR CSS-->
+    <!-- BEGIN: Page Level CSS-->
+    <link rel="stylesheet" type="text/css" href="/materialize-admin/app-assets/css/themes/vertical-modern-menu-template/materialize.min.css">
+    <link rel="stylesheet" type="text/css" href="/materialize-admin/app-assets/css/themes/vertical-modern-menu-template/style.min.css">
+    <link rel="stylesheet" type="text/css" href="/materialize-admin/app-assets/css/pages/app-sidebar.min.css">
+    <link rel="stylesheet" type="text/css" href="/materialize-admin/app-assets/css/pages/app-contacts.min.css">
+    <!-- END: Page Level CSS-->
+    <!-- BEGIN: Custom CSS-->
+    <link rel="stylesheet" type="text/css" href="/materialize-admin/app-assets/css/custom/custom.css">
+    <!-- END: Custom CSS-->
+}
+@section FooterScripts{
+    <script src="/materialize-admin/app-assets/vendors/select2/select2.full.min.js"></script>
+    <script src="/materialize-admin/app-assets/js/plugins.min.js"></script>
+    <script src="/materialize-admin/app-assets/js/search.min.js"></script>
+    <script src="/materialize-admin/app-assets/js/scripts/form-select2.min.js"></script>
+   
+
+    <!-- BEGIN PAGE VENDOR JS-->
+    <script src="/materialize-admin/app-assets/vendors/data-tables/js/jquery.dataTables.min.js"></script>
+    <script src="/materialize-admin/app-assets/vendors/data-tables/extensions/responsive/js/dataTables.responsive.min.js"></script>
+    <!-- END PAGE VENDOR JS-->
+    <!-- BEGIN THEME  JS-->
+    <script src="/materialize-admin/app-assets/js/plugins.min.js"></script>
+    <script src="/materialize-admin/app-assets/js/search.min.js"></script>
+    <script src="/materialize-admin/app-assets/js/custom/custom-script.min.js"></script>
+    <script src="/materialize-admin/app-assets/js/scripts/customizer.min.js"></script>
+    <!-- END THEME  JS-->
+    <!-- BEGIN PAGE LEVEL JS-->
+    <script src="/materialize-admin/app-assets/js/scripts/app-contacts.min.js"></script>
+    <!-- END PAGE LEVEL JS-->
+
+    <script src="/js/Admin/Submission/Assignment/index-Assignment.js"></script>
+}
+
+<div class="input-field">
+    <select class="select2 browser-default">
+        <option></option>
+        <option value="square">Square</option>
+        <option value="rectangle">Rectangle</option>
+        <option value="rombo">Rombo</option>
+        <option value="romboid">Romboid</option>
+        <option value="trapeze">Trapeze</option>
+        <option value="traible">Triangle</option>
+        <option value="polygon">Polygon</option>
+    </select>
+</div>
+
+

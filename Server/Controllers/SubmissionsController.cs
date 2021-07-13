@@ -33,6 +33,7 @@ namespace StoryForce.Server.Controllers
         private readonly IEventService _eventService;
         private readonly ISendMailJobService _sendMailJobService;
         private readonly IConfiguration _configuration;
+        private readonly ITagService _tagService;
         readonly string[] scopes = { DriveService.Scope.Drive };
         DriveService _gDriveService;
         private FileService _fileService;
@@ -43,8 +44,9 @@ namespace StoryForce.Server.Controllers
             , ISubmissionService submissionService
             , IStoryFileService storyFileService
             , IPeopleService peopleService
-            , IEventService eventService,
-            ISendMailJobService sendMailJobService
+            , IEventService eventService
+            , ISendMailJobService sendMailJobService
+            , ITagService tagService
             )
         {
             _configuration = configration;
@@ -53,6 +55,7 @@ namespace StoryForce.Server.Controllers
             _peopleService = peopleService;
             _gDriveService = InitGoogleDriveService();
             _eventService = eventService;
+            _tagService = tagService;
             this._sendMailJobService = sendMailJobService;
             _fileService = new FileService();
             _webClient = new WebClient();
@@ -112,6 +115,23 @@ namespace StoryForce.Server.Controllers
             }
 
             var insertedSubmission = await _submissionService.CreateAsync(convertedSubmission);
+            foreach (var item in insertedSubmission.SubmittedFiles)
+            {
+                var createTag = new Tag();
+                var createTagdto = new CreateTagDto();
+                if (item.RequestedBy == null)
+                {
+                    createTagdto.Name = "Pending";
+                    createTag = await _tagService.CreateAsync(createTagdto.ToEntity());
+                    {
+                        var tagStoryFile = await _storyFileService.GetAsync(item.Id);
+                        if (tagStoryFile == null)
+                            return BadRequest($"Story file with id '{createTagdto.StoryFileId}' not found.");
+                        tagStoryFile.Tags.Add(createTag);
+                        await _storyFileService.UpdateAsync(item.Id, item);
+                    }
+                }
+            }
 
             var requestedPeople = submission.UploadFiles.Select(x => x.RequestedBy).ToArray();
 
@@ -147,7 +167,7 @@ namespace StoryForce.Server.Controllers
 
             var convertedSubmission = submission.ConvertToEntity();
             convertedSubmission.SubmittedBy = await _peopleService.GetByEmailOrNameAndYearAsync(submission.SubmittedBy.Email, submission.SubmittedBy.Name, null) ?? submission.SubmittedBy;
-            
+
             for (var index = 0; index < submission.UploadFiles.Count; index++)
             {
                 var currentFile = submission.UploadFiles[index];
@@ -246,7 +266,7 @@ namespace StoryForce.Server.Controllers
                     .Select(async person => await _peopleService.GetByEmailOrNameAndYearAsync(person.Email, person.Name, null) ?? person));
             }
 
-            
+
             if (convertedSubmission.Event != null && !string.IsNullOrEmpty(convertedSubmission.Event.Name))
             {
                 convertedSubmission.Event = await _eventService.GetByNameAsync(convertedSubmission.Event.Name) ?? submission.Event;
@@ -446,7 +466,20 @@ namespace StoryForce.Server.Controllers
             });
 
             return service;
-        }        
+        }
+        public class CreateTagDto
+        {
+            public string Name { get; set; }
 
+            public int StoryFileId { get; set; }
+            public Tag ToEntity()
+            {
+                return new Tag()
+                {
+                    Name = this.Name,
+                    CreatedAt = DateTime.Now
+                };
+            }
+        }
     }
 }
